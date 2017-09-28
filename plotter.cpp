@@ -28,8 +28,12 @@ void inpfunc(){
     }
     printf("Enter value of constant term.: ");
     scanf("%f",&funcdata[0]);
-    printf("Enter range of x in form [start] [stop]: ");
+    printf("Enter range of x in form [start] [stop] (0 0 for default): ");
     scanf("%f %f",&start,&stop);
+    if(start>=stop){
+        start = -5;
+        stop = 5;
+    }
 }
 void initRendering() {
 	glEnable(GL_DEPTH_TEST);
@@ -59,8 +63,8 @@ void drawScene() {
 	glTranslatef(0.0f, 0.0f, -7.0f);
 
 	glBegin(GL_LINES);
-		glVertex3f(-5.2f, 0.0f, 0.0f);
-		glVertex3f(5.2f, 0.0f, 0.0f);
+		glVertex3f(-5.1f, 0.0f, 0.0f);
+		glVertex3f(5.1f, 0.0f, 0.0f);
 	glEnd();
 
     glPushMatrix();
@@ -70,7 +74,27 @@ void drawScene() {
 		glVertex3f(0.0f, -2.75f, 0.0f);
 		glVertex3f(0.0f, 2.75f, 0.0f);
 	glEnd();
+	glBegin(GL_LINE_STRIP);
+        glVertex3f(-0.1f,-2.65f,0.0f);
+        glVertex3f(0.0f,-2.75f,0.0f);
+        glVertex3f(0.1f,-2.65f,0.0f);
+	glEnd();
+	glBegin(GL_LINE_STRIP);
+        glVertex3f(-0.1f,2.65f,0.0f);
+        glVertex3f(0.0f,2.75f,0.0f);
+        glVertex3f(0.1f,2.65f,0.0f);
+	glEnd();
 	glPopMatrix();
+	glBegin(GL_LINE_STRIP);
+        glVertex3f(-5.0,0.1,0.0f);
+        glVertex3f(-5.1f,0.0f,0.0f);
+        glVertex3f(-5.0f,-0.1f,0.0f);
+	glEnd();
+	glBegin(GL_LINE_STRIP);
+        glVertex3f(5.0,0.1,0.0f);
+        glVertex3f(5.1f,0.0f,0.0f);
+        glVertex3f(5.0f,-0.1f,0.0f);
+	glEnd();
 	glBegin(GL_LINE_STRIP);
         float i;
         for(i=0;i<1;i+=segmentlen){
