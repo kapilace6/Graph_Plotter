@@ -3,6 +3,9 @@
 #include<math.h>
 #include<stdio.h>
 
+const int segments = 100000;
+const float segmentlen = 1.0/segments;
+const float screenxstart = -5.0f,screenxstop = 5.0f;
 //Screen ranges from -5 to +5 on OpenGl coordinates
 int funcdata[20]={0},degree;
 float start,stop; //Range of x to be plotted
@@ -60,19 +63,18 @@ void drawScene() {
 	glEnd();
 
     glPushMatrix();
-    float neworix = (0.0f - start)*(stop-start)-5.0f; //transforms the position of y axis on screen depending on input range of function.
+    float neworix = (0.0f - start)*10/(stop-start)-5.0f; //transforms the position of y axis on screen depending on input range of function.
     glTranslatef(neworix, 0.0f, 0.0f);
 	glBegin(GL_LINES);
 		glVertex3f(0.0f, -2.75f, 0.0f);
 		glVertex3f(0.0f, 2.75f, 0.0f);
 	glEnd();
 	glPopMatrix();
-
 	glBegin(GL_LINE_STRIP);
-        int i;
-        for(i=0;i<100000;i++){
-            float x = start + i*(stop-start)/100000; //Actual value of x of function.
-            float xdisp = -5 + i*10.0/100000; //Corresponding value of x on screen.
+        float i;
+        for(i=0;i<1;i+=segmentlen){
+            float x = start + i*(stop-start); //Actual value of x of function.
+            float xdisp = screenxstart + i*(screenxstop-screenxstart); //Corresponding value of x on screen.
             glVertex3f(xdisp,funcval(x),0.0f);
         }
     glEnd();
@@ -88,7 +90,7 @@ void update(int value) {
 	}
 	*/
 	glutPostRedisplay();
-	glutTimerFunc(50, update, 0);
+	glutTimerFunc(166, update, 0);
 }
 
 int main(int argc, char** argv) {
@@ -103,7 +105,6 @@ int main(int argc, char** argv) {
 	glutDisplayFunc(drawScene);
 	glutKeyboardFunc(handleKeypress);
 	glutReshapeFunc(handleResize);
-	//glutTimerFunc(50, update, 0);
 	glutMainLoop();
 	return 0;
 }
