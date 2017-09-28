@@ -7,7 +7,8 @@ const int segments = 100000;
 const float segmentlen = 1.0/segments;
 const float screenxstart = -5.0f,screenxstop = 5.0f;
 //Screen ranges from -5 to +5 on OpenGl coordinates
-int funcdata[20]={0},degree;
+float funcdata[20]={0};
+int degree;
 float start,stop; //Range of x to be plotted
 float funcval(float x){
     int i;
@@ -23,10 +24,10 @@ void inpfunc(){
     scanf("%d",&degree);
     for(i=degree;i>0;i--){
         printf("Enter coefficient of x^%d.: ",i);
-        scanf("%d",&funcdata[i]);
+        scanf("%f",&funcdata[i]);
     }
     printf("Enter value of constant term.: ");
-    scanf("%d",&funcdata[0]);
+    scanf("%f",&funcdata[0]);
     printf("Enter range of x in form [start] [stop]: ");
     scanf("%f %f",&start,&stop);
 }
@@ -58,8 +59,8 @@ void drawScene() {
 	glTranslatef(0.0f, 0.0f, -7.0f);
 
 	glBegin(GL_LINES);
-		glVertex3f(-6.0f, 0.0f, 0.0f);
-		glVertex3f(6.0f, 0.0f, 0.0f);
+		glVertex3f(-5.2f, 0.0f, 0.0f);
+		glVertex3f(5.2f, 0.0f, 0.0f);
 	glEnd();
 
     glPushMatrix();
