@@ -70,7 +70,7 @@ void precompute(){
 		}
 		x += (stopx-startx)/segments;
 	}
-	printf("ok");
+	//printf("ok");
 	/*for(i=0;i<1000;i++){
 		printf("%f ",preplot[i]);
 	}*/
@@ -81,52 +81,64 @@ void drawScene() {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glTranslatef(0.0f, 0.0f, -7.0f);
-
+	int left=1,right=1,top=1,bottom = 1;
     glPushMatrix();
     float neworix = (0.0f - startx)*10/(stopx-startx)-5.0f; //transforms the position of y axis on screen depending on input range of function.
-    if(neworix>5.0f){
+    if(neworix>=5.0f){
 	    neworix = 5.0f;	
-	}else if(neworix<-5.0f){
+	    right = 0;
+	}else if(neworix<=-5.0f){
 		neworix = -5.0f;
+		left = 0;
+	}
+	float neworiy = (0.0f - starty)*5.5/(stopy-starty)-2.75f;
+	if(neworiy>=2.75f){
+	    neworiy = 2.75f;
+	    top = 0;	
+	}else if(neworiy<=-2.75f){
+		neworiy = -2.75f;
+		bottom = 0;
 	}
     glTranslatef(neworix, 0.0f, 0.0f);
 	glBegin(GL_LINES);
 		glVertex3f(0.0f, -2.80f, 0.0f);
 		glVertex3f(0.0f, 2.80f, 0.0f);
 	glEnd();
+	if(bottom){
 	glBegin(GL_LINE_STRIP);
         glVertex3f(-0.1f,-2.75f,0.0f);
         glVertex3f(0.0f,-2.80f,0.0f);
         glVertex3f(0.1f,-2.75f,0.0f);
 	glEnd();
+	}
+	if(top){
 	glBegin(GL_LINE_STRIP);
         glVertex3f(-0.1f,2.75f,0.0f);
         glVertex3f(0.0f,2.80f,0.0f);
         glVertex3f(0.1f,2.75f,0.0f);
 	glEnd();
+	}
 	glPopMatrix();
 	glPushMatrix();
-	float neworiy = (0.0f - starty)*5.5/(stopy-starty)-2.75f;
-	if(neworix>2.75f){
-	    neworix = 2.75f;	
-	}else if(neworix<-2.75f){
-		neworix = -2.75f;
-	}
 	glTranslatef(0.0f,neworiy,0.0f);
 	glBegin(GL_LINES);
 		glVertex3f(-5.1f, 0.0f, 0.0f);
 		glVertex3f(5.1f, 0.0f, 0.0f);
 	glEnd();
+	if(left){
 	glBegin(GL_LINE_STRIP);
         glVertex3f(-5.0,0.1,0.0f);
         glVertex3f(-5.1f,0.0f,0.0f);
         glVertex3f(-5.0f,-0.1f,0.0f);
 	glEnd();
+	}
+	if(right){
 	glBegin(GL_LINE_STRIP);
         glVertex3f(5.0,0.1,0.0f);
         glVertex3f(5.1f,0.0f,0.0f);
         glVertex3f(5.0f,-0.1f,0.0f);
 	glEnd();
+	}
 	glPopMatrix();
 	glBegin(GL_LINE_STRIP);
         int i;
