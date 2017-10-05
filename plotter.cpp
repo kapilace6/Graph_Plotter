@@ -1,18 +1,22 @@
 #include <string.h>
 #include <GL/glut.h>
+#include <vector>
 #include<math.h>
 #include<stdio.h>
+using namespace std;
 
 #define segments 100000
 int w = 1366, h = 768;
 int mouseX, mouseY;
+int functionType;
 
 const float segmentlen = 1.0 / segments;
 const float screenxstart = -5.0f, screenxstop = 5.0f;
 const float screenystart = -2.75f, screenystop = 2.75f;
 //Screen ranges from -5 to +5 on OpenGl coordinates
 
-float funcdata[20] = { 0 }, y[segments] = { 0 };
+vector<double> funcdata;
+GLfloat y[segments] = { 0 };
 int degree;
 float startx, stopx; //Range of x to be plotted
 float starty = INFINITY, stopy = -INFINITY;
@@ -24,7 +28,7 @@ void dispString(double x, double y, char *string)
 		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, string[i]);
 }
 
-float funcval(float x) {
+GLfloat polynomialFunc(float x) {
 	int i;
 	float val = 0;
 	for (i = 0; i <= degree; i++) {
@@ -33,17 +37,73 @@ float funcval(float x) {
 	return val;
 }
 
+GLfloat operation(double val) {
+	switch (functionType) {
+		case 1:
+			return (GLfloat) sin(val);
+		case 2:
+			return (GLfloat) cos(val);
+		case 3:
+			return (GLfloat) tan(val);
+		case 4:
+			return (GLfloat) 1.0 / sin(val);
+		case 5:
+			return (GLfloat) 1.0 / cos(val);
+		case 6:
+			return (GLfloat) 1.0 / tan(val);
+		case 9:
+			return (GLfloat) polynomialFunc(val);
+		default:
+            return 0;
+			break;
+	}
+}
+
+
 void inpfunc() {
 	int i;
 	printf("Enter degree of polynomial.\n");
 	scanf("%d", &degree);
 	for (i = degree; i>0; i--) {
 		printf("Enter coefficient of x^%d.: ", i);
-		scanf("%f", &funcdata[i]);
+		scanf("%lf", &funcdata[i]);
 	}
 	printf("Enter value of constant term.: ");
-	scanf("%f", &funcdata[0]);
+	scanf("%lf", &funcdata[0]);
 	printf("Enter range of x in form [start] [stop] (0 0 for default): ");
+	scanf("%f %f", &startx, &stopx);
+	if (startx >= stopx) {
+		startx = -5;
+		stopx = 5;
+	}
+}
+
+void functionInput() {
+	printf("Trigonometric Functions:\n");
+	printf("Enter 1,2,3,4,5,6 for sine, cosine, tangent, cosecant, secant, cotangent\n");
+	printf("Polynomial functions:\n");
+	printf("Enter 9\n");
+	while (1) {
+		printf("Enter your choice: ");
+		scanf("%d", &functionType);
+		if (((functionType > 0) && (functionType < 7)) || (functionType == 9)) {
+			break;
+		}
+		else {
+			printf("Wrong choice!\n");
+		}
+	}
+	if (functionType == 9) {
+		printf("Enter degree of the polynomial: ");
+		scanf("%d", &degree);
+		double element;
+		for (int s = 0; s <= degree; s++) {
+			printf("Enter coefficient of term with degree %d: ", s);
+			scanf("%lf",  &element);
+			funcdata.push_back(element);
+		}
+	}
+    printf("Enter range of x in form [start] [stop] (0 0 for default): ");
 	scanf("%f %f", &startx, &stopx);
 	if (startx >= stopx) {
 		startx = -5;
@@ -80,7 +140,7 @@ void precompute() {
 	int i;
 	float x = startx;
 	for (i = 0; i<segments; i++) {
-		y[i] = funcval(x);
+		y[i] = operation(x);
 		if (y[i]<starty) {
 			starty = y[i];
 		}
@@ -209,18 +269,20 @@ void drawScene() {
 	glEnd();
 
 	drawPointLoc();
+    
+    glutPostRedisplay();
 
 	glutSwapBuffers();
 }
 
 void update(int value) {
-	glutPostRedisplay();
+	
 	glutTimerFunc(166, update, 0);
 }
 
 int main(int argc, char** argv) {
 
-	inpfunc();
+	functionInput();
 	precompute();
 
 	glutInit(&argc, argv);
