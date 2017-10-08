@@ -1,8 +1,9 @@
 #include <string.h>
 #include <GL/glut.h>
 #include <vector>
-#include<math.h>
-#include<stdio.h>
+#include <math.h>
+#include <stdio.h>
+
 using namespace std;
 
 #define segments 100000
@@ -54,7 +55,7 @@ GLfloat operation(double val) {
 		case 9:
 			return (GLfloat) polynomialFunc(val);
 		default:
-            return 0;
+			return 0;
 			break;
 	}
 }
@@ -148,6 +149,33 @@ void precompute() {
 			stopy = y[i];
 		}
 		x += (stopx - startx) / segments;
+	}
+}
+
+void handleArrowpress(int key, int x, int y) {
+	switch (key) {
+		case GLUT_KEY_UP:
+			startx -= 10;
+			stopx += 10;
+			precompute();
+			break;
+		case GLUT_KEY_DOWN:
+			if ((startx + 10) <= (stopx - 10)) {
+				startx += 10;
+				stopx -= 10;
+				precompute();
+			}
+			break;
+		case GLUT_KEY_LEFT:
+			startx -= 10;
+			stopx -= 10;
+			precompute();
+			break;
+		case GLUT_KEY_RIGHT:
+			startx += 10;
+			stopx += 10;
+			precompute();
+			break;
 	}
 }
 
@@ -297,6 +325,7 @@ int main(int argc, char** argv) {
 	glutPassiveMotionFunc(mouseMotion);
 	glutDisplayFunc(drawScene);
 	glutKeyboardFunc(handleKeypress);
+	glutSpecialFunc(handleArrowpress);
 	glutReshapeFunc(handleResize);
 
 	glutMainLoop();
