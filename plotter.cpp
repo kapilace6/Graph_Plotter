@@ -40,23 +40,23 @@ GLfloat polynomialFunc(float x) {
 
 GLfloat operation(double val) {
 	switch (functionType) {
-		case 1:
-			return (GLfloat) sin(val);
-		case 2:
-			return (GLfloat) cos(val);
-		case 3:
-			return (GLfloat) tan(val);
-		case 4:
-			return (GLfloat) 1.0 / sin(val);
-		case 5:
-			return (GLfloat) 1.0 / cos(val);
-		case 6:
-			return (GLfloat) 1.0 / tan(val);
-		case 9:
-			return (GLfloat) polynomialFunc(val);
-		default:
-			return 0;
-			break;
+	case 1:
+		return (GLfloat)sin(val);
+	case 2:
+		return (GLfloat)cos(val);
+	case 3:
+		return (GLfloat)tan(val);
+	case 4:
+		return (GLfloat) 1.0 / sin(val);
+	case 5:
+		return (GLfloat) 1.0 / cos(val);
+	case 6:
+		return (GLfloat) 1.0 / tan(val);
+	case 9:
+		return (GLfloat)polynomialFunc(val);
+	default:
+		return 0;
+		break;
 	}
 }
 
@@ -76,6 +76,20 @@ void inpfunc() {
 	if (startx >= stopx) {
 		startx = -5;
 		stopx = 5;
+	}
+}
+void precompute() {
+	int i;
+	float x = startx;
+	for (i = 0; i<segments; i++) {
+		y[i] = operation(x);
+		if (y[i]<starty) {
+			starty = y[i];
+		}
+		if (y[i]>stopy) {
+			stopy = y[i];
+		}
+		x += (stopx - startx) / segments;
 	}
 }
 
@@ -100,11 +114,11 @@ void functionInput() {
 		double element;
 		for (int s = 0; s <= degree; s++) {
 			printf("Enter coefficient of term with degree %d: ", s);
-			scanf("%lf",  &element);
+			scanf("%lf", &element);
 			funcdata.push_back(element);
 		}
 	}
-    printf("Enter range of x in form [start] [stop] (0 0 for default): ");
+	printf("Enter range of x in form [start] [stop] (0 0 for default): ");
 	scanf("%f %f", &startx, &stopx);
 	if (startx >= stopx) {
 		startx = -5;
@@ -122,6 +136,20 @@ void handleKeypress(unsigned char key, int x, int y) {
 	switch (key) {
 	case 27:
 		exit(0);
+
+	case '+':
+		if ((startx + 10) <= (stopx - 10)) {
+			startx += 10;
+			stopx -= 10;
+			precompute();
+		}
+		break;
+
+	case '-':
+		startx -= 10;
+		stopx += 10;
+		precompute();
+		break;
 	}
 }
 
@@ -137,45 +165,30 @@ void mouseMotion(int x, int y) {
 	mouseY = y;
 }
 
-void precompute() {
-	int i;
-	float x = startx;
-	for (i = 0; i<segments; i++) {
-		y[i] = operation(x);
-		if (y[i]<starty) {
-			starty = y[i];
-		}
-		if (y[i]>stopy) {
-			stopy = y[i];
-		}
-		x += (stopx - startx) / segments;
-	}
-}
-
 void handleArrowpress(int key, int x, int y) {
 	switch (key) {
-		case GLUT_KEY_UP:
-			startx -= 10;
-			stopx += 10;
-			precompute();
-			break;
-		case GLUT_KEY_DOWN:
-			if ((startx + 10) <= (stopx - 10)) {
-				startx += 10;
-				stopx -= 10;
-				precompute();
-			}
-			break;
-		case GLUT_KEY_LEFT:
-			startx -= 10;
+	case GLUT_KEY_UP:
+		startx -= 10;
+		stopx += 10;
+		precompute();
+		break;
+	case GLUT_KEY_DOWN:
+		if ((startx + 10) <= (stopx - 10)) {
+			startx += 10;
 			stopx -= 10;
 			precompute();
-			break;
-		case GLUT_KEY_RIGHT:
-			startx += 10;
-			stopx += 10;
-			precompute();
-			break;
+		}
+		break;
+	case GLUT_KEY_LEFT:
+		startx -= 10;
+		stopx -= 10;
+		precompute();
+		break;
+	case GLUT_KEY_RIGHT:
+		startx += 10;
+		stopx += 10;
+		precompute();
+		break;
 	}
 }
 
@@ -297,14 +310,14 @@ void drawScene() {
 	glEnd();
 
 	drawPointLoc();
-    
-    glutPostRedisplay();
+
+	glutPostRedisplay();
 
 	glutSwapBuffers();
 }
 
 void update(int value) {
-	
+
 	glutTimerFunc(166, update, 0);
 }
 
@@ -315,12 +328,12 @@ int main(int argc, char** argv) {
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-	glutInitWindowSize(800, 800);
+	glutInitWindowSize(w, h);
 	glutInitWindowPosition(200, 200);
 
 	initRendering();
 	glutCreateWindow("Graph Plotter");
-	glutFullScreen();
+	//glutFullScreen();
 
 	glutPassiveMotionFunc(mouseMotion);
 	glutDisplayFunc(drawScene);
