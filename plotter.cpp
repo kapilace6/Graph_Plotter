@@ -79,6 +79,20 @@ void inpfunc() {
 		stopx = 5;
 	}
 }
+void precompute() {
+	int i;
+	float x = startx;
+	for (i = 0; i<segments; i++) {
+		y[i] = operation(x);
+		if (y[i]<starty) {
+			starty = y[i];
+		}
+		if (y[i]>stopy) {
+			stopy = y[i];
+		}
+		x += (stopx - startx) / segments;
+	}
+}
 
 void functionInput() {
 	printf("1 -> sin\n");
@@ -120,7 +134,7 @@ void functionInput() {
 			trigcoeff *= 0.01745329251; // pi / 180
 		}
 	}
-    printf("Enter range of x in form [start] [stop] (0 0 for default): ");
+	printf("Enter range of x in form [start] [stop] (0 0 for default): ");
 	scanf("%f %f", &startx, &stopx);
 	if (startx >= stopx) {
 		startx = -5;
@@ -138,6 +152,20 @@ void handleKeypress(unsigned char key, int x, int y) {
 	switch (key) {
 	case 27:
 		exit(0);
+
+	case '+':
+		if ((startx + 10) <= (stopx - 10)) {
+			startx += 10;
+			stopx -= 10;
+			precompute();
+		}
+		break;
+
+	case '-':
+		startx -= 10;
+		stopx += 10;
+		precompute();
+		break;
 	}
 }
 
@@ -153,45 +181,30 @@ void mouseMotion(int x, int y) {
 	mouseY = y;
 }
 
-void precompute() {
-	int i;
-	float x = startx;
-	for (i = 0; i<segments; i++) {
-		y[i] = operation(x);
-		if (y[i]<starty) {
-			starty = y[i];
-		}
-		if (y[i]>stopy) {
-			stopy = y[i];
-		}
-		x += (stopx - startx) / segments;
-	}
-}
-
 void handleArrowpress(int key, int x, int y) {
 	switch (key) {
-		case GLUT_KEY_UP:
-			startx -= 10;
-			stopx += 10;
-			precompute();
-			break;
-		case GLUT_KEY_DOWN:
-			if ((startx + 10) <= (stopx - 10)) {
-				startx += 10;
-				stopx -= 10;
-				precompute();
-			}
-			break;
-		case GLUT_KEY_LEFT:
-			startx -= 10;
+	case GLUT_KEY_UP:
+		startx -= 10;
+		stopx += 10;
+		precompute();
+		break;
+	case GLUT_KEY_DOWN:
+		if ((startx + 10) <= (stopx - 10)) {
+			startx += 10;
 			stopx -= 10;
 			precompute();
-			break;
-		case GLUT_KEY_RIGHT:
-			startx += 10;
-			stopx += 10;
-			precompute();
-			break;
+		}
+		break;
+	case GLUT_KEY_LEFT:
+		startx -= 10;
+		stopx -= 10;
+		precompute();
+		break;
+	case GLUT_KEY_RIGHT:
+		startx += 10;
+		stopx += 10;
+		precompute();
+		break;
 	}
 }
 
@@ -313,14 +326,14 @@ void drawScene() {
 	glEnd();
 
 	drawPointLoc();
-    
-    glutPostRedisplay();
+
+	glutPostRedisplay();
 
 	glutSwapBuffers();
 }
 
 void update(int value) {
-	
+
 	glutTimerFunc(166, update, 0);
 }
 
@@ -331,12 +344,12 @@ int main(int argc, char** argv) {
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-	glutInitWindowSize(800, 800);
+	glutInitWindowSize(w, h);
 	glutInitWindowPosition(200, 200);
 
 	initRendering();
 	glutCreateWindow("Graph Plotter");
-	glutFullScreen();
+	//glutFullScreen();
 
 	glutPassiveMotionFunc(mouseMotion);
 	glutDisplayFunc(drawScene);
