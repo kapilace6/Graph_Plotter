@@ -159,7 +159,10 @@ void drawPointLoc() {
 	fx = screenystart + 5.5*(y[i] - starty) / (stopy - starty);
 
 	//printf("%d %d %f\n",i,mouseX,x);
-
+    char Write[30];
+    sprintf(Write,"(%f , %f)",x,fx);
+    dispString(-4,2.5,Write);
+    
 	glPushMatrix();
 	glTranslatef(x, 0.0f, 0.0f);
 	glBegin(GL_LINES);
