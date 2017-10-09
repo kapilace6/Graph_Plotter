@@ -1,14 +1,16 @@
 #include <string.h>
 #include <GL/glut.h>
 #include <vector>
-#include<math.h>
-#include<stdio.h>
+#include <math.h>
+#include <stdio.h>
+
 using namespace std;
 
 #define segments 100000
 int w = 1366, h = 768;
 int mouseX, mouseY;
 int functionType;
+float trigcoeff;
 
 const float segmentlen = 1.0 / segments;
 const float screenxstart = -5.0f, screenxstop = 5.0f;
@@ -40,21 +42,21 @@ GLfloat polynomialFunc(float x) {
 GLfloat operation(double val) {
 	switch (functionType) {
 		case 1:
-			return (GLfloat) sin(val);
+			return (GLfloat) sin(val * trigcoeff);
 		case 2:
-			return (GLfloat) cos(val);
+			return (GLfloat) cos(val * trigcoeff);
 		case 3:
-			return (GLfloat) tan(val);
+			return (GLfloat) tan(val * trigcoeff);
 		case 4:
-			return (GLfloat) 1.0 / sin(val);
+			return (GLfloat) 1.0 / sin(val * trigcoeff);
 		case 5:
-			return (GLfloat) 1.0 / cos(val);
+			return (GLfloat) 1.0 / cos(val * trigcoeff);
 		case 6:
-			return (GLfloat) 1.0 / tan(val);
+			return (GLfloat) 1.0 / tan(val * trigcoeff);
 		case 9:
 			return (GLfloat) polynomialFunc(val);
 		default:
-            return 0;
+			return 0;
 			break;
 	}
 }
@@ -77,16 +79,33 @@ void inpfunc() {
 		stopx = 5;
 	}
 }
+void precompute() {
+	int i;
+	float x = startx;
+	for (i = 0; i<segments; i++) {
+		y[i] = operation(x);
+		if (y[i]<starty) {
+			starty = y[i];
+		}
+		if (y[i]>stopy) {
+			stopy = y[i];
+		}
+		x += (stopx - startx) / segments;
+	}
+}
 
 void functionInput() {
-	printf("Trigonometric Functions:\n");
-	printf("Enter 1,2,3,4,5,6 for sine, cosine, tangent, cosecant, secant, cotangent\n");
-	printf("Polynomial functions:\n");
-	printf("Enter 9\n");
+	printf("1 -> sin\n");
+	printf("2 -> cos\n");
+	printf("3 -> tan\n");
+	printf("4 -> cosec\n");
+	printf("5 -> sec\n");
+	printf("6 -> cot\n");
+	printf("9 -> polynomial function\n");
 	while (1) {
 		printf("Enter your choice: ");
 		scanf("%d", &functionType);
-		if (((functionType > 0) && (functionType < 7)) || (functionType == 9)) {
+		if (((functionType >= 1) && (functionType <= 6)) || (functionType == 9)) {
 			break;
 		}
 		else {
@@ -98,12 +117,24 @@ void functionInput() {
 		scanf("%d", &degree);
 		double element;
 		for (int s = 0; s <= degree; s++) {
-			printf("Enter coefficient of term with degree %d: ", s);
+			printf("Enter coefficient of x^%d term: ", s);
 			scanf("%lf",  &element);
 			funcdata.push_back(element);
 		}
 	}
-    printf("Enter range of x in form [start] [stop] (0 0 for default): ");
+	else {
+		int angleunit;
+		printf("1 -> degree\n");
+		printf("2 -> radian\n");
+		printf("Enter: ");
+		scanf("%d", &angleunit);
+		printf("Enter coefficient of x in your trig function: ");
+		scanf("%f", &trigcoeff);
+		if (angleunit == 1) {
+			trigcoeff *= 0.01745329251; // pi / 180
+		}
+	}
+	printf("Enter range of x in form [start] [stop] (0 0 for default): ");
 	scanf("%f %f", &startx, &stopx);
 	if (startx >= stopx) {
 		startx = -5;
@@ -121,6 +152,20 @@ void handleKeypress(unsigned char key, int x, int y) {
 	switch (key) {
 	case 27:
 		exit(0);
+
+	case '+':
+		if ((startx + 10) <= (stopx - 10)) {
+			startx += 10;
+			stopx -= 10;
+			precompute();
+		}
+		break;
+
+	case '-':
+		startx -= 10;
+		stopx += 10;
+		precompute();
+		break;
 	}
 }
 
@@ -136,18 +181,30 @@ void mouseMotion(int x, int y) {
 	mouseY = y;
 }
 
-void precompute() {
-	int i;
-	float x = startx;
-	for (i = 0; i<segments; i++) {
-		y[i] = operation(x);
-		if (y[i]<starty) {
-			starty = y[i];
+void handleArrowpress(int key, int x, int y) {
+	switch (key) {
+	case GLUT_KEY_UP:
+		startx -= 10;
+		stopx += 10;
+		precompute();
+		break;
+	case GLUT_KEY_DOWN:
+		if ((startx + 10) <= (stopx - 10)) {
+			startx += 10;
+			stopx -= 10;
+			precompute();
 		}
-		if (y[i]>stopy) {
-			stopy = y[i];
-		}
-		x += (stopx - startx) / segments;
+		break;
+	case GLUT_KEY_LEFT:
+		startx -= 10;
+		stopx -= 10;
+		precompute();
+		break;
+	case GLUT_KEY_RIGHT:
+		startx += 10;
+		stopx += 10;
+		precompute();
+		break;
 	}
 }
 
@@ -272,14 +329,14 @@ void drawScene() {
 	glEnd();
 
 	drawPointLoc();
-    
-    glutPostRedisplay();
+
+	glutPostRedisplay();
 
 	glutSwapBuffers();
 }
 
 void update(int value) {
-	
+
 	glutTimerFunc(166, update, 0);
 }
 
@@ -290,16 +347,17 @@ int main(int argc, char** argv) {
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-	glutInitWindowSize(800, 800);
+	glutInitWindowSize(w, h);
 	glutInitWindowPosition(200, 200);
 
 	initRendering();
 	glutCreateWindow("Graph Plotter");
-	glutFullScreen();
+	//glutFullScreen();
 
 	glutPassiveMotionFunc(mouseMotion);
 	glutDisplayFunc(drawScene);
 	glutKeyboardFunc(handleKeypress);
+	glutSpecialFunc(handleArrowpress);
 	glutReshapeFunc(handleResize);
 
 	glutMainLoop();

@@ -10,7 +10,7 @@ sudo deb -i [path/to/libglui-dev(.deb)]
 ```
 ## Compiling and Executing
 ```shell
-cc plotter.cpp -lglut -lGLU -lGL
+cc plotter.cpp -lstdc++ -lm -lglut -lGLU -lGL
 ./a.out
 ```
 ## Contributing
