@@ -15,6 +15,9 @@ float trigcoeff;
 const float segmentlen = 1.0 / segments;
 const float screenxstart = -5.0f, screenxstop = 5.0f;
 const float screenystart = -2.75f, screenystop = 2.75f;
+char sMode[] = "SELECT MODE";
+char zMode[] = "ZOOM MODE";
+char* dispMode = sMode;
 //Screen ranges from -5 to +5 on OpenGl coordinates
 
 vector<double> funcdata;
@@ -164,6 +167,12 @@ void handleKeypress(unsigned char key, int x, int y) {
 		stopx += 10;
 		precompute();
 		break;
+	case 'z':
+		dispMode = zMode;
+		break;
+	case 's':
+		dispMode = sMode;
+		break;
 	}
 }
 
@@ -171,6 +180,7 @@ void handleResize(int w, int h) {
 	glViewport(0, 0, w, h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
+	dispString(-5.1, 2.7, dispMode);
 	gluPerspective(45.0, (double)w / (double)h, 1.0, 200.0);
 }
 
@@ -324,6 +334,8 @@ void drawScene() {
 
 	glTranslatef(0.0f, 0.0f, -7.0f);
 	glColor3f(1.0f, 1.0f, 1.0f);
+
+	dispString(-5.1, 2.7, dispMode);
 
 	drawArrowAxes();
 
