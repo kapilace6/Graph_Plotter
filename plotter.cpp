@@ -152,7 +152,6 @@ void handleKeypress(unsigned char key, int x, int y) {
 	switch (key) {
 	case 27:
 		exit(0);
-
 	case '+':
 		if ((startx + 10) <= (stopx - 10)) {
 			startx += 10;
@@ -160,7 +159,6 @@ void handleKeypress(unsigned char key, int x, int y) {
 			precompute();
 		}
 		break;
-
 	case '-':
 		startx -= 10;
 		stopx += 10;
@@ -205,6 +203,21 @@ void handleArrowpress(int key, int x, int y) {
 		stopx += 10;
 		precompute();
 		break;
+	}
+}
+
+void handleMousewheel(int key, int state, int x, int y) {
+	if (key == 3) {
+		startx -= 10;
+		stopx += 10;
+		precompute();
+	}
+	else if (key == 4) {
+		if ((startx + 10) <= (stopx - 10)) {
+			startx += 10;
+			stopx -= 10;
+			precompute();
+		}
 	}
 }
 
@@ -355,6 +368,7 @@ int main(int argc, char** argv) {
 	glutDisplayFunc(drawScene);
 	glutKeyboardFunc(handleKeypress);
 	glutSpecialFunc(handleArrowpress);
+	glutMouseFunc(handleMousewheel);
 	glutReshapeFunc(handleResize);
 
 	glutMainLoop();
