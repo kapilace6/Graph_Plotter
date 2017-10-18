@@ -17,7 +17,17 @@ const float segmentlen = 1.0 / segments;
 const float screenxstart = -5.0f, screenxstop = 5.0f;
 const float screenystart = -2.75f, screenystop = 2.75f;
 //Screen ranges from -5 to +5 on OpenGl coordinates
+char myString[255];
 
+void drawString(char *string)
+{
+  int len, i;
+  len = (int) strlen(string);
+  for (i = 0; i < len; i++)
+  {
+    glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, string[i]);
+  }
+}
 vector<double> funcdata;
 GLfloat y[segments] = { 0 };
 int degree;
@@ -278,8 +288,16 @@ void drawArrowAxes() {
 	}
 
 	glPushMatrix();
+	
 	glTranslatef(neworix, 0.0f, 0.0f);
-
+	
+	glBegin(GL_LINES);
+	for(float i = -2.7f ; i<= 2.7f ; i+= 5.4/10){
+	glVertex3f(-0.05f, i ,  0.0f);
+	glVertex3f(0.05f, i , 0.0f);
+	}
+	glEnd();
+	
 	glBegin(GL_LINES);
 	glVertex3f(0.0f, -2.80f, 0.0f);
 	glVertex3f(0.0f, 2.80f, 0.0f);
@@ -320,6 +338,30 @@ void drawArrowAxes() {
 		glVertex3f(5.0f, -0.04f, 0.0f);
 	}
 	glEnd();
+	
+	glBegin(GL_LINES);
+	for(float i = -5.0f ; i<= 5.0f ; i+= 10.0/10){
+	glVertex3f(i , -0.05f ,  0.0f);
+	glVertex3f(i , 0.05f , 0.0f);
+	}
+	glEnd();
+	
+	int count = startx*10;
+	for(float i = -5.0f ; i<= 5.0f ; i+= 10.0f/10){
+	int count_abs = count;
+	
+	if(count_abs < 0)
+	count_abs = -count_abs;
+	
+	glRasterPos2f(i, -0.2f);
+	sprintf(myString, "%d",(int)(count/10));
+	drawString(myString);
+	glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, '.');
+	glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, (count_abs%10 + 48));
+	count += (stopx - startx);
+	
+}
+	
 	glPopMatrix();
 }
 
