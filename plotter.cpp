@@ -24,6 +24,8 @@ int degree;
 float startx, stopx; //Range of x to be plotted
 float starty = INFINITY, stopy = -INFINITY;
 
+float scalingFactor;
+
 char expression[200];
 parse p;
 
@@ -87,6 +89,8 @@ void inpfunc() {
 void precompute() {
 	int i;
 	float x = startx;
+    starty = INFINITY;
+    stopy = -INFINITY;
 	for (i = 0; i<segments; i++) {
 		//y[i] = operation(x);
         y[i] = p.evalpost(x);
@@ -190,6 +194,7 @@ void handleKeypress(unsigned char key, int x, int y) {
 void handleResize(int w, int h) {
 	glViewport(0, 0, w, h);
 	glMatrixMode(GL_PROJECTION);
+	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(45.0, (double)w / (double)h, 1.0, 200.0);
 }
@@ -200,18 +205,18 @@ void mouseMotion(int x, int y) {
 }
 
 void handleArrowpress(int key, int x, int y) {
+    float sx = startx;
+    float ex = stopx;
 	switch (key) {
 	case GLUT_KEY_UP:
-		startx -= 10;
-		stopx += 10;
+		startx -= (ex-sx)/2; //zoom out
+		stopx += (ex-sx)/2;
 		precompute();
 		break;
-	case GLUT_KEY_DOWN:
-		if ((startx + 10) <= (stopx - 10)) {
-			startx += 10;
-			stopx -= 10;
-			precompute();
-		}
+	case GLUT_KEY_DOWN: //zoom in
+        startx += (ex-sx)/4;
+        stopx -= (ex-sx)/4;
+        precompute();
 		break;
 	case GLUT_KEY_LEFT:
 		startx -= 10;
@@ -232,11 +237,14 @@ void drawPointLoc() {
 
 	x = screenxstart + 10.0f*(i) / 100000;
 	fx = screenystart + 5.5*(y[i] - starty) / (stopy - starty);
-
+    
+    float px = startx + (stopx-startx)*i/100000;
 	//printf("%d %d %f\n",i,mouseX,x);
     char Write[30];
-    sprintf(Write,"(%f , %f)",x,fx);
+    sprintf(Write,"(%f , %f)",px,y[i]);
     dispString(-4,2.5,Write);
+    sprintf(Write,"(%f , %f)",starty,stopy);
+    dispString(-4,1,Write);
     
 	glPushMatrix();
 	glTranslatef(x, 0.0f, 0.0f);
