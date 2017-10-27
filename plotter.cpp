@@ -13,18 +13,18 @@ int mouseX, mouseY;
 int functionType;
 float trigcoeff;
 
-const float segmentlen = 1.0 / segments;
-const float screenxstart = -5.0f, screenxstop = 5.0f;
-const float screenystart = -2.75f, screenystop = 2.75f;
+const double segmentlen = 1.0 / segments;
+const double screenxstart = -5.0f, screenxstop = 5.0f;
+const double screenystart = -2.75f, screenystop = 2.75f;
 //Screen ranges from -5 to +5 on OpenGl coordinates
 
 vector<double> funcdata;
-GLfloat y[segments] = { 0 };
+GLdouble y[segments] = { 0 };
 int degree;
-float startx, stopx; //Range of x to be plotted
-float starty = INFINITY, stopy = -INFINITY;
+double startx, stopx; //Range of x to be plotted
+double starty = INFINITY, stopy = -INFINITY;
 
-float scalingFactor;
+double scalingFactor;
 
 char expression[200];
 parse p;
@@ -36,7 +36,7 @@ void dispString(double x, double y, char *string)
 		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, string[i]);
 }
 
-GLfloat polynomialFunc(float x) {
+GLdouble polynomialFunc(float x) {
 	int i;
 	float val = 0;
 	for (i = 0; i <= degree; i++) {
@@ -45,22 +45,22 @@ GLfloat polynomialFunc(float x) {
 	return val;
 }
 
-GLfloat operation(double val) {
+GLdouble operation(double val) {
 	switch (functionType) {
 		case 1:
-			return (GLfloat) sin(val * trigcoeff);
+			return (GLdouble) sin(val * trigcoeff);
 		case 2:
-			return (GLfloat) cos(val * trigcoeff);
+			return (GLdouble) cos(val * trigcoeff);
 		case 3:
-			return (GLfloat) tan(val * trigcoeff);
+			return (GLdouble) tan(val * trigcoeff);
 		case 4:
-			return (GLfloat) 1.0 / sin(val * trigcoeff);
+			return (GLdouble) 1.0 / sin(val * trigcoeff);
 		case 5:
-			return (GLfloat) 1.0 / cos(val * trigcoeff);
+			return (GLdouble) 1.0 / cos(val * trigcoeff);
 		case 6:
-			return (GLfloat) 1.0 / tan(val * trigcoeff);
+			return (GLdouble) 1.0 / tan(val * trigcoeff);
 		case 9:
-			return (GLfloat) polynomialFunc(val);
+			return (GLdouble) polynomialFunc(val);
 		default:
 			return 0;
 			break;
@@ -88,7 +88,7 @@ void inpfunc() {
 }
 void precompute() {
 	int i;
-	float x = startx;
+	double x = startx;
     starty = INFINITY;
     stopy = -INFINITY;
 	for (i = 0; i<segments; i++) {
@@ -205,8 +205,8 @@ void mouseMotion(int x, int y) {
 }
 
 void handleArrowpress(int key, int x, int y) {
-    float sx = startx;
-    float ex = stopx;
+    double sx = startx;
+    double ex = stopx;
 	switch (key) {
 	case GLUT_KEY_UP:
 		startx -= (ex-sx)/2; //zoom out
@@ -233,12 +233,12 @@ void handleArrowpress(int key, int x, int y) {
 
 void drawPointLoc() {
 	int i = ((float)mouseX * 100000) / w;
-	float x = 0.0f, fx = 0.0f;
+	double x = 0.0f, fx = 0.0f;
 
 	x = screenxstart + 10.0f*(i) / 100000;
 	fx = screenystart + 5.5*(y[i] - starty) / (stopy - starty);
     
-    float px = startx + (stopx-startx)*i/100000;
+    double px = startx + (stopx-startx)*i/100000;
 	//printf("%d %d %f\n",i,mouseX,x);
     char Write[30];
     sprintf(Write,"(%f , %f)",px,y[i]);
@@ -265,7 +265,7 @@ void drawPointLoc() {
 void drawArrowAxes() {
 	int left = 1, right = 1, top = 1, bottom = 1;
 
-	float neworix = (0.0f - startx) * 10 / (stopx - startx) - 5.0f; //transforms the position of y axis on screen depending on input range of function.
+	double neworix = (0.0f - startx) * 10 / (stopx - startx) - 5.0f; //transforms the position of y axis on screen depending on input range of function.
 	if (neworix >= 5.0f) {
 		neworix = 5.0f;
 		right = 0;
@@ -275,7 +275,7 @@ void drawArrowAxes() {
 		left = 0;
 	}
 
-	float neworiy = (0.0f - starty)*5.5 / (stopy - starty) - 2.75f; //transforms the position of x axis on screen depending on y values.
+	double neworiy = (0.0f - starty)*5.5 / (stopy - starty) - 2.75f; //transforms the position of x axis on screen depending on y values.
 	if (neworiy >= 2.75f) {
 		neworiy = 2.75f;
 		top = 0;
@@ -345,10 +345,10 @@ void drawScene() {
 
 	glBegin(GL_LINE_STRIP);
 	int i;
-	float x = startx; //Actual value of x of function.
+	double x = startx; //Actual value of x of function.
 	for (i = 0; i<segments; i++) {
-		float xdisp = screenxstart + 10 * (x - startx) / (stopx - startx); //Corresponding value of x on screen.
-		float ydisp = screenystart + 5.5*(y[i] - starty) / (stopy - starty);
+		double xdisp = screenxstart + 10 * (x - startx) / (stopx - startx); //Corresponding value of x on screen.
+		double ydisp = screenystart + 5.5*(y[i] - starty) / (stopy - starty);
 		glVertex3f(xdisp, ydisp, 0.0f);
 		x += (stopx - startx) / segments;
 	}

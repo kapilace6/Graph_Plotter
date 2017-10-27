@@ -13,13 +13,13 @@ class parse{
     int ftop = -1;
     int stackTop = -1;
     int postInd = -1;
-    float evalstack[200];
+    double evalstack[200];
     int floattop = -1;
-    void pushfloat(float val){
+    void pushfloat(double val){
         floattop++;
         evalstack[floattop] = val;
     }
-    float popfloat(){
+    double popfloat(){
         return evalstack[floattop--];
     }
     void push(char ele[]){
@@ -124,7 +124,7 @@ class parse{
                         }
                     }
                     unary = 1;
-                }else if(expression[i] == 's'||expression[i] == 'c'||expression[i] == 'l'){
+                }else if(expression[i] == 's'||expression[i] == 'c'||expression[i] == 'l'||expression[i] == 't'){
                     if(numInd==0){
                         pushE[0] = '+';
                     }
@@ -174,7 +174,7 @@ class parse{
         }
         return 0;
     }
-    float op(float f1,float f2,char o){
+    double op(double f1,double f2,char o){
         switch(o){
             case '+':
                 return f1+f2;
@@ -195,7 +195,7 @@ class parse{
         return 0;
         
     }
-    float func(char op,float x){
+    double func(char op,double x){
         switch(op){
             case 's':
                 return sin(x);
@@ -212,12 +212,12 @@ class parse{
         }
         return 0;
     }
-    public: float evalpost(float x){
+    public: double evalpost(double x){
        float val;
        int i;
        for(i=0;i<=postInd;i++){
            if((post[i][0] == '+'||post[i][0] == '-')&&strlen(post[i])>1){
-               if(post[i][1] == 's'||post[i][1] == 'c'||post[i][1] == 'l'){
+               if(post[i][1] == 's'||post[i][1] == 'c'||post[i][1] == 'l'||post[i][1] == 't'){
                    if(post[i][0] == '+'){
                        pushfloat(func(post[i][1],evalstack[floattop--]));
                    }else if(post[i][0] == '-'){
