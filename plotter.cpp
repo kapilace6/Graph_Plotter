@@ -3,6 +3,7 @@
 #include <vector>
 #include <math.h>
 #include <stdio.h>
+#include "postfix.cpp"
 
 using namespace std;
 
@@ -25,6 +26,9 @@ GLfloat y[segments] = { 0 };
 int degree;
 float startx, stopx; //Range of x to be plotted
 float starty = INFINITY, stopy = -INFINITY;
+
+char expression[200];
+parse p;
 
 void dispString(double x, double y, char *string)
 {
@@ -81,12 +85,14 @@ void inpfunc() {
 		startx = -5;
 		stopx = 5;
 	}
+    p.intopost(expression);
 }
 void precompute() {
 	int i;
 	float x = startx;
 	for (i = 0; i<segments; i++) {
-		y[i] = operation(x);
+		//y[i] = operation(x);
+        y[i] = p.evalpost(x);
 		if (y[i]<starty) {
 			starty = y[i];
 		}
@@ -97,7 +103,7 @@ void precompute() {
 	}
 }
 
-void functionInput() {
+/*void functionInput() {
 	printf("1 -> sin\n");
 	printf("2 -> cos\n");
 	printf("3 -> tan\n");
@@ -143,6 +149,18 @@ void functionInput() {
 		startx = -5;
 		stopx = 5;
 	}
+}*/
+
+void functionInput(){
+    printf("Enter arithmetic expression.\n");
+    scanf("%s",expression);
+    printf("Enter range of x in form [start] [stop] (0 0 for default): ");
+	scanf("%f %f", &startx, &stopx);
+	if (startx >= stopx) {
+		startx = -5;
+		stopx = 5;
+	}
+    p.intopost(expression);
 }
 
 void initRendering() {
@@ -239,7 +257,10 @@ void drawPointLoc() {
 	fx = screenystart + 5.5*(y[i] - starty) / (stopy - starty);
 
 	//printf("%d %d %f\n",i,mouseX,x);
-
+    char Write[30];
+    sprintf(Write,"(%f , %f)",x,fx);
+    dispString(-4,2.5,Write);
+    
 	glPushMatrix();
 	glTranslatef(x, 0.0f, 0.0f);
 	glBegin(GL_LINES);
