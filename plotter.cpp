@@ -79,7 +79,7 @@ void inpfunc() {
 	printf("Enter value of constant term.: ");
 	scanf("%lf", &funcdata[0]);
 	printf("Enter range of x in form [start] [stop] (0 0 for default): ");
-	scanf("%f %f", &startx, &stopx);
+	scanf("%lf %lf", &startx, &stopx);
 	if (startx >= stopx) {
 		startx = -5;
 		stopx = 5;
@@ -154,9 +154,9 @@ void precompute() {
 
 void functionInput(){
     printf("Enter arithmetic expression.\n");
-    scanf("%s",expression);
+    fgets(expression,200,stdin);
     printf("Enter range of x in form [start] [stop] (0 0 for default): ");
-	scanf("%f %f", &startx, &stopx);
+	scanf("%fl %lf", &startx, &stopx);
 	if (startx >= stopx) {
 		startx = -5;
 		stopx = 5;
@@ -367,10 +367,14 @@ void update(int value) {
 }
 
 int main(int argc, char** argv) {
-
+    
 	functionInput();
-	precompute();
-
+    try{
+        precompute();
+    }catch(...){
+        printf("Invalid.\n");
+        return 0;
+    }
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize(w, h);
