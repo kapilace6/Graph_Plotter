@@ -156,7 +156,7 @@ void functionInput(){
     printf("Enter arithmetic expression.\n");
     fgets(expression,200,stdin);
     printf("Enter range of x in form [start] [stop] (0 0 for default): ");
-	scanf("%fl %lf", &startx, &stopx);
+	scanf("%lf %lf", &startx, &stopx);
 	if (startx >= stopx) {
 		startx = -5;
 		stopx = 5;
@@ -211,24 +211,30 @@ void handleArrowpress(int key, int x, int y) {
 	case GLUT_KEY_UP:
 		startx -= (ex-sx)/2; //zoom out
 		stopx += (ex-sx)/2;
-		precompute();
 		break;
 	case GLUT_KEY_DOWN: //zoom in
         startx += (ex-sx)/4;
         stopx -= (ex-sx)/4;
-        precompute();
 		break;
 	case GLUT_KEY_LEFT:
 		startx -= 10;
 		stopx -= 10;
-		precompute();
 		break;
 	case GLUT_KEY_RIGHT:
 		startx += 10;
 		stopx += 10;
-		precompute();
 		break;
 	}
+    if((stopx-startx)<0.0001f){
+        startx = sx;
+        stopx = ex;
+    }
+    if(startx>1000000000||startx<-1000000000||stopx>1000000000||stopx<-1000000000){
+        startx = sx;
+        stopx = ex;
+    }
+    printf("%f\n",stopx-startx);
+    precompute();
 }
 
 void drawPointLoc() {
@@ -240,10 +246,10 @@ void drawPointLoc() {
     
     double px = startx + (stopx-startx)*i/100000;
 	//printf("%d %d %f\n",i,mouseX,x);
-    char Write[30];
-    sprintf(Write,"(%f , %f)",px,y[i]);
+    char Write[100];
+    snprintf(Write,100,"(%f , %f)",px,y[i]);
     dispString(-4,2.5,Write);
-    sprintf(Write,"(%f , %f)",starty,stopy);
+    snprintf(Write,100,"(%f , %f)",starty,stopy);
     dispString(-4,1,Write);
     
 	glPushMatrix();
