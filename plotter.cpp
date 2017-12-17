@@ -347,6 +347,10 @@ void drawScene() {
 	glTranslatef(0.0f, 0.0f, -7.0f);
 	glColor3f(1.0f, 1.0f, 1.0f);
 
+	char Write[100];
+	snprintf(Write,100, expression);
+	dispString(-4.8, 2.7, Write);
+
 	drawArrowAxes();
 
 	glBegin(GL_LINE_STRIP);
