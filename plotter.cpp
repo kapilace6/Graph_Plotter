@@ -12,6 +12,7 @@ int w = 1366, h = 768;
 int mouseX, mouseY;
 int functionType;
 float trigcoeff;
+bool is_exp_input = false;
 
 const double segmentlen = 1.0 / segments;
 const double screenxstart = -5.0f, screenxstop = 5.0f;
@@ -21,12 +22,13 @@ const double screenystart = -2.75f, screenystop = 2.75f;
 vector<double> funcdata;
 GLdouble y[segments] = { 0 };
 int degree;
-double startx, stopx; //Range of x to be plotted
+double startx  = -5, stopx = 5; //Range of x to be plotted
 double starty = INFINITY, stopy = -INFINITY;
 
 double scalingFactor;
 
-char expression[200];
+char expression[200] = "";
+int exp_index = 0;
 parse p;
 
 void dispString(double x, double y, char *string)
@@ -175,18 +177,51 @@ void handleKeypress(unsigned char key, int x, int y) {
 	case 27:
 		exit(0);
 
+	case 13:
+		is_exp_input = true;
+		try{
+			p.intopost(expression);
+	        precompute();
+	    }catch(...){
+	        printf("Invalid.\n");
+	        return;
+	    }
+		break;
+
 	case '+':
-		if ((startx + 10) <= (stopx - 10)) {
+		if (is_exp_input && ((startx + 10) <= (stopx - 10))) {
 			startx += 10;
 			stopx -= 10;
 			precompute();
+		} else {
+			expression[exp_index] = key;
+			exp_index++;
 		}
 		break;
 
 	case '-':
-		startx -= 10;
-		stopx += 10;
-		precompute();
+		if (is_exp_input) {
+			startx -= 10;
+			stopx += 10;
+			precompute();
+		} else {
+			expression[exp_index] = key;
+			exp_index++;
+		}
+		break;
+
+	case 8:
+		if ((exp_index > 0) && !is_exp_input) {
+			exp_index--;
+			expression[exp_index] = 0;
+		}
+		break;
+
+	default:
+		if (!is_exp_input) {
+			expression[exp_index] = key;
+			exp_index++;
+		}
 		break;
 	}
 }
@@ -204,7 +239,11 @@ void mouseMotion(int x, int y) {
 	mouseY = y;
 }
 
-void handleArrowpress(int key, int x, int y) {
+void handleSpecialpress(int key, int x, int y) {
+	if (glutGetModifiers() == GLUT_ACTIVE_SHIFT) {
+		printf("hello");
+		return;
+	}
     double sx = startx;
     double ex = stopx;
 	switch (key) {
@@ -347,24 +386,40 @@ void drawScene() {
 	glTranslatef(0.0f, 0.0f, -7.0f);
 	glColor3f(1.0f, 1.0f, 1.0f);
 
-	char Write[100];
-	snprintf(Write,100, expression);
-	dispString(-4.8, 2.7, Write);
+	if (is_exp_input) {
+		char Write[100];
+		snprintf(Write,100, expression);
+		dispString(-4.8, 2.7, Write);
 
-	drawArrowAxes();
+		drawArrowAxes();
 
-	glBegin(GL_LINE_STRIP);
-	int i;
-	double x = startx; //Actual value of x of function.
-	for (i = 0; i<segments; i++) {
-		double xdisp = screenxstart + 10 * (x - startx) / (stopx - startx); //Corresponding value of x on screen.
-		double ydisp = screenystart + 5.5*(y[i] - starty) / (stopy - starty);
-		glVertex3f(xdisp, ydisp, 0.0f);
-		x += (stopx - startx) / segments;
+		glBegin(GL_LINE_STRIP);
+		int i;
+		double x = startx; //Actual value of x of function.
+		for (i = 0; i<segments; i++) {
+			double xdisp = screenxstart + 10 * (x - startx) / (stopx - startx); //Corresponding value of x on screen.
+			double ydisp = screenystart + 5.5*(y[i] - starty) / (stopy - starty);
+			glVertex3f(xdisp, ydisp, 0.0f);
+			x += (stopx - startx) / segments;
+		}
+		glEnd();
+
+		drawPointLoc();
+	} else {
+		char Write[100];
+		snprintf(Write, 100, "Expression: ");
+		dispString(-2, 1, Write);
+		snprintf(Write, 100, expression);
+		dispString(-1, 1, Write);
+		snprintf(Write, 100, "Start x (default 0): ");
+		dispString(-2, 0, Write);
+		snprintf(Write, 100, expression);
+		dispString(-1, 0, Write);
+		snprintf(Write, 100, "Stop x (default 0): ");
+		dispString(-2, -1, Write);
+		snprintf(Write, 100, expression);
+		dispString(-1, -1, Write);
 	}
-	glEnd();
-
-	drawPointLoc();
 
 	glutPostRedisplay();
 
@@ -378,13 +433,13 @@ void update(int value) {
 
 int main(int argc, char** argv) {
     
-	functionInput();
+	/*functionInput();
     try{
         precompute();
     }catch(...){
         printf("Invalid.\n");
         return 0;
-    }
+    }*/
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize(w, h);
@@ -395,9 +450,9 @@ int main(int argc, char** argv) {
 	//glutFullScreen();
 
 	glutPassiveMotionFunc(mouseMotion);
-	glutDisplayFunc(drawScene);
 	glutKeyboardFunc(handleKeypress);
-	glutSpecialFunc(handleArrowpress);
+	glutSpecialFunc(handleSpecialpress);
+	glutDisplayFunc(drawScene);
 	glutReshapeFunc(handleResize);
 
 	glutMainLoop();
