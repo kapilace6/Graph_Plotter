@@ -4,6 +4,7 @@
 #include <math.h>
 #include <stdio.h>
 #include "expression.cpp"
+#include <cstdlib>
 
 using namespace std;
 
@@ -13,6 +14,7 @@ int mouseX, mouseY;
 int functionType;
 float trigcoeff;
 bool is_exp_input = false;
+bool expr_done = false, inp_startx_done = false, inp_stopx_done = false;
 
 const double segmentlen = 1.0 / segments;
 const double screenxstart = -5.0f, screenxstop = 5.0f;
@@ -22,13 +24,14 @@ const double screenystart = -2.75f, screenystop = 2.75f;
 vector<double> funcdata;
 GLdouble y[segments] = { 0 };
 int degree;
+char inp_startx[200], inp_stopx[200];
 double startx  = -5, stopx = 5; //Range of x to be plotted
 double starty = INFINITY, stopy = -INFINITY;
 
 double scalingFactor;
 
 char expression[200] = "";
-int exp_index = 0;
+int exp_index = 0, inp_startx_index = 0, inp_stopx_index = 0;
 parse p;
 
 void dispString(double x, double y, char *string)
@@ -178,35 +181,64 @@ void handleKeypress(unsigned char key, int x, int y) {
 		exit(0);
 
 	case 13:
-		is_exp_input = true;
-		try{
-			p.intopost(expression);
-	        precompute();
-	    }catch(...){
-	        printf("Invalid.\n");
-	        return;
-	    }
+		if (!expr_done) expr_done = true;
+		else if (!inp_startx_done) inp_startx_done = true;
+		else if (!inp_stopx_done) inp_stopx_done = true;
+		if (inp_stopx_done) {
+			is_exp_input = true;
+			startx = atoi(inp_startx);
+			stopx = atoi(inp_stopx);
+			if (startx >= stopx) {
+				startx = -5;
+				stopx = 5;
+			}
+			try{
+				p.intopost(expression);
+		        precompute();
+		    }catch(...){
+		        printf("Invalid.\n");
+		        return;
+		    }
+		}
 		break;
 
 	case '+':
-		if (is_exp_input && ((startx + 10) <= (stopx - 10))) {
+		if (!is_exp_input) {
+			if (!expr_done) {
+				expression[exp_index] = key;
+				exp_index++;
+			} else if (!inp_startx_done) {
+				inp_startx[inp_startx_index] = key;
+				inp_startx_index++;
+			} else if (!inp_stopx_done) {
+				inp_stopx[inp_stopx_index] = key;
+				inp_stopx_index++;
+			}
+		}
+		else {
 			startx += 10;
 			stopx -= 10;
 			precompute();
-		} else {
-			expression[exp_index] = key;
-			exp_index++;
 		}
 		break;
 
 	case '-':
-		if (is_exp_input) {
+		if (!is_exp_input) {
+			if (!expr_done) {
+				expression[exp_index] = key;
+				exp_index++;
+			} else if (!inp_startx_done) {
+				inp_startx[inp_startx_index] = key;
+				inp_startx_index++;
+			} else if (!inp_stopx_done) {
+				inp_stopx[inp_stopx_index] = key;
+				inp_stopx_index++;
+			}
+		}
+		else {
 			startx -= 10;
 			stopx += 10;
 			precompute();
-		} else {
-			expression[exp_index] = key;
-			exp_index++;
 		}
 		break;
 
@@ -219,8 +251,16 @@ void handleKeypress(unsigned char key, int x, int y) {
 
 	default:
 		if (!is_exp_input) {
-			expression[exp_index] = key;
-			exp_index++;
+			if (!expr_done) {
+				expression[exp_index] = key;
+				exp_index++;
+			} else if (!inp_startx_done) {
+				inp_startx[inp_startx_index] = key;
+				inp_startx_index++;
+			} else if (!inp_stopx_done) {
+				inp_stopx[inp_stopx_index] = key;
+				inp_stopx_index++;
+			}
 		}
 		break;
 	}
@@ -240,40 +280,38 @@ void mouseMotion(int x, int y) {
 }
 
 void handleSpecialpress(int key, int x, int y) {
-	if (glutGetModifiers() == GLUT_ACTIVE_SHIFT) {
-		printf("hello");
-		return;
+	if (is_exp_input) {
+		double sx = startx;
+	    double ex = stopx;
+		switch (key) {
+		case GLUT_KEY_UP:
+			startx -= (ex-sx)/2; //zoom out
+			stopx += (ex-sx)/2;
+			break;
+		case GLUT_KEY_DOWN: //zoom in
+	        startx += (ex-sx)/4;
+	        stopx -= (ex-sx)/4;
+			break;
+		case GLUT_KEY_LEFT:
+			startx -= 10;
+			stopx -= 10;
+			break;
+		case GLUT_KEY_RIGHT:
+			startx += 10;
+			stopx += 10;
+			break;
+		}
+	    if((stopx-startx)<0.0001f){
+	        startx = sx;
+	        stopx = ex;
+	    }
+	    if(startx>1000000000||startx<-1000000000||stopx>1000000000||stopx<-1000000000){
+	        startx = sx;
+	        stopx = ex;
+	    }
+	    printf("%f\n",stopx-startx);
+	    precompute();
 	}
-    double sx = startx;
-    double ex = stopx;
-	switch (key) {
-	case GLUT_KEY_UP:
-		startx -= (ex-sx)/2; //zoom out
-		stopx += (ex-sx)/2;
-		break;
-	case GLUT_KEY_DOWN: //zoom in
-        startx += (ex-sx)/4;
-        stopx -= (ex-sx)/4;
-		break;
-	case GLUT_KEY_LEFT:
-		startx -= 10;
-		stopx -= 10;
-		break;
-	case GLUT_KEY_RIGHT:
-		startx += 10;
-		stopx += 10;
-		break;
-	}
-    if((stopx-startx)<0.0001f){
-        startx = sx;
-        stopx = ex;
-    }
-    if(startx>1000000000||startx<-1000000000||stopx>1000000000||stopx<-1000000000){
-        startx = sx;
-        stopx = ex;
-    }
-    printf("%f\n",stopx-startx);
-    precompute();
 }
 
 void drawPointLoc() {
@@ -413,12 +451,12 @@ void drawScene() {
 		dispString(-1, 1, Write);
 		snprintf(Write, 100, "Start x (default 0): ");
 		dispString(-2, 0, Write);
-		snprintf(Write, 100, expression);
-		dispString(-1, 0, Write);
+		snprintf(Write, 100, inp_startx);
+		dispString(1, 0, Write);
 		snprintf(Write, 100, "Stop x (default 0): ");
 		dispString(-2, -1, Write);
-		snprintf(Write, 100, expression);
-		dispString(-1, -1, Write);
+		snprintf(Write, 100, inp_stopx);
+		dispString(1, -1, Write);
 	}
 
 	glutPostRedisplay();
