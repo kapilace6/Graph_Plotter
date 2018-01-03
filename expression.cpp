@@ -3,7 +3,9 @@
 #include<stdlib.h>
 #include<ctype.h>
 #include<math.h>
+#include<stdexcept>
 
+using namespace std;
 
 class parse{
     char expression[200];
@@ -115,7 +117,7 @@ class parse{
                                 }else{
                                     postInd++;
                                     strcpy(post[postInd],stack[stackTop]);
-                                    stackTop--; 
+                                    stackTop--;
                                 }
                             }
                             pushE[0] = expression[i];
@@ -134,7 +136,7 @@ class parse{
                     pushE[0] = '$';
                     pushE[1] = '\0';
                     push(pushE);
-                    
+
                 }else if(expression[i] == ')'){
                     unary = 1;
                     printf("%s",stack[stackTop]);
@@ -155,7 +157,7 @@ class parse{
                     stackTop--;
                     unary = 0;
                 }
-                
+
             }
         }
         if(numInd>0){
@@ -193,7 +195,7 @@ class parse{
                 break;
         }
         return 0;
-        
+
     }
     double func(char op,double x){
         switch(op){
@@ -229,19 +231,25 @@ class parse{
                    }else if(post[i][0] == '-'){
                        pushfloat(-1*x);
                    }
-               }else{
-                   pushfloat(strtof(post[i],NULL));
-               }
-               
-           }else if(post[i][0] == '+'||post[i][0] == '-'||post[i][0] == '*'||post[i][0] == '/'||post[i][0] == '^'){
+                }else{
+                    pushfloat(strtof(post[i],NULL));
+                }
+
+            }else if(post[i][0] == '+'||post[i][0] == '-'||post[i][0] == '*'||post[i][0] == '/'||post[i][0] == '^'){
                float f1,f2,f;
-               f2 = popfloat();
-               f1 = popfloat();
-               f = op(f1,f2,post[i][0]);
-               pushfloat(f);
-           }
-       }
-       val = popfloat();
-       return val;
+                if(floattop<1){
+                    throw std::runtime_error("Invalid Expression.");
+                }
+                f2 = popfloat();
+                f1 = popfloat();
+                f = op(f1,f2,post[i][0]);
+                pushfloat(f);
+            }
+        }
+        val = popfloat();
+        if(floattop!=-1){
+            throw std::runtime_error("Invalid Expression.");
+        }
+        return val;
     }
 };
