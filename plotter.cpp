@@ -5,18 +5,19 @@
 #include <math.h>
 #include <stdio.h>
 #include "expression.cpp"
+#define ratio 1.778645833
 
 using namespace std;
 
 #define segments 100000
-int w = 1366, h = 768;
+int w, h;
 int mouseX, mouseY;
 int functionType;
 float trigcoeff;
 
-const double segmentlen = 1.0 / segments;
-const double screenxstart = -5.0f, screenxstop = 5.0f;
-const double screenystart = -2.75f, screenystop = 2.75f;
+double segmentlen = 1.0 / segments;
+double screenxstart = -5.153f, screenxstop = 5.153f;
+double screenystart = -2.907f, screenystop = 2.907f;
 //Screen ranges from -5 to +5 on OpenGl coordinates
 
 vector<double> funcdata;
@@ -83,8 +84,8 @@ void inpfunc() {
 	printf("Enter range of x in form [start] [stop] (0 0 for default): ");
 	scanf("%lf %lf", &startx, &stopx);
 	if (startx >= stopx) {
-		startx = -5;
-		stopx = 5;
+		startx = screenxstart;
+		stopx = screenxstop;
 	}
     p.intopost(expression);
 }
@@ -160,8 +161,8 @@ void functionInput(){
     printf("Enter range of x in form [start] [stop] (0 0 for default): ");
 	scanf("%lf %lf", &startx, &stopx);
 	if (startx >= stopx) {
-		startx = -5;
-		stopx = 5;
+		startx = screenxstart;
+		stopx = screenxstop;
 	}
     p.intopost(expression);
 }
@@ -261,7 +262,7 @@ void handleArrowpress(int key, int x, int y) {
         startx = sx;
         stopx = ex;
     }
-    printf("%f\n",stopx-startx);
+    //printf("%f\n",stopx-startx);
     precompute();
 }
 
@@ -269,23 +270,25 @@ void drawPointLoc() {
 	int i = ((float)mouseX * 100000) / w;
 	double x = 0.0f, fx = 0.0f;
 
-	x = screenxstart + 10.0f*(i) / 100000;
-	fx = screenystart + 5.5*(y[i] - starty) / (stopy - starty);
-    
+	x = screenxstart + (screenxstop - screenxstart)*(i) / 100000;
+	fx = screenystart + (screenystop - screenystart)*(y[i] - starty) / (stopy - starty);
+    //fx = screenystart + (screenystop - screenystart)*mouseY / h;
     double px = startx + (stopx-startx)*i/100000;
 	//printf("%d %d %f\n",i,mouseX,x);
     char Write[100];
     snprintf(Write,100,"(%f , %f)",px,y[i]);
     dispString(-4,2.5,Write);
-    snprintf(Write,100,"(%f , %f)",starty,stopy);
+    snprintf(Write,100,"(%f , %f)",x,fx);
     dispString(-4,1,Write);
+    snprintf(Write,100,"(%d , %d)",mouseX,mouseY);
+    dispString(-2,-1,Write);
     
 	glPushMatrix();
 	glTranslatef(x, 0.0f, 0.0f);
 	glBegin(GL_LINES);
 	glColor3f(0.1f, 0.6f, 0.1f);
-	glVertex3f(0.0f, 2.75f, 0.0f);
-	glVertex3f(0.0f, -2.75f, 0.0f);
+	glVertex3f(0.0f, screenystop, 0.0f);
+	glVertex3f(0.0f, screenystart, 0.0f);
 	glEnd();
 
 	glPointSize(6);
@@ -299,23 +302,23 @@ void drawPointLoc() {
 void drawArrowAxes() {
 	int left = 1, right = 1, top = 1, bottom = 1;
 
-	double neworix = (0.0f - startx) * 10 / (stopx - startx) - 5.0f; //transforms the position of y axis on screen depending on input range of function.
-	if (neworix >= 5.0f) {
-		neworix = 5.0f;
+	double neworix = (0.0f - startx) * (screenxstop - screenxstart) / (stopx - startx) - screenxstop; //transforms the position of y axis on screen depending on input range of function.
+	if (neworix >= screenxstop) {
+		neworix = screenxstop;
 		right = 0;
 	}
-	else if (neworix <= -5.0f) {
-		neworix = -5.0f;
+	else if (neworix <= screenxstart) {
+		neworix = screenxstart;
 		left = 0;
 	}
 
-	double neworiy = (0.0f - starty)*5.5 / (stopy - starty) - 2.75f; //transforms the position of x axis on screen depending on y values.
-	if (neworiy >= 2.75f) {
-		neworiy = 2.75f;
+	double neworiy = (0.0f - starty)*(screenystop - screenystart) / (stopy - starty) - screenystop; //transforms the position of x axis on screen depending on y values.
+	if (neworiy >= screenystop) {
+		neworiy = screenystop;
 		top = 0;
 	}
-	else if (neworiy <= -2.75f) {
-		neworiy = -2.75f;
+	else if (neworiy <= screenystart) {
+		neworiy = screenystart;
 		bottom = 0;
 	}
 
@@ -323,7 +326,7 @@ void drawArrowAxes() {
 	glTranslatef(neworix, 0.0f, 0.0f);
 
 	glBegin(GL_LINES);
-	glVertex3f(0.0f, -2.80f, 0.0f);
+	glVertex3f(0.0f, -2.70f, 0.0f);
 	glVertex3f(0.0f, 2.80f, 0.0f);
 	glEnd();
 
@@ -388,8 +391,8 @@ void drawScene() {
 	int i;
 	double x = startx; //Actual value of x of function.
 	for (i = 0; i<segments; i++) {
-		double xdisp = screenxstart + 10 * (x - startx) / (stopx - startx); //Corresponding value of x on screen.
-		double ydisp = screenystart + 5.5*(y[i] - starty) / (stopy - starty);
+		double xdisp = screenxstart + (screenxstop - screenxstart) * (x - startx) / (stopx - startx); //Corresponding value of x on screen.
+		double ydisp = screenystart + (screenystop - screenystart)*(y[i] - starty) / (stopy - starty);
 		glVertex3f(xdisp, ydisp, 0.0f);
 		x += (stopx - startx) / segments;
 	}
@@ -418,13 +421,20 @@ int main(int argc, char** argv) {
         return 0;
     }
 	glutInit(&argc, argv);
+	w = glutGet(GLUT_SCREEN_WIDTH);
+	h = glutGet(GLUT_SCREEN_HEIGHT);
+	screenxstart *= w / 1920.0f;
+	screenystart *= h / 1080.0f;
+	screenxstop *= w / 1920.0f;
+	screenystop *= h / 1080.0f;
+	//printf("%d %d\n", w, h);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize(w, h);
-	glutInitWindowPosition(200, 200);
+	//glutInitWindowPosition(200, 200);
 
 	initRendering();
 	glutCreateWindow("Graph Plotter");
-	//glutFullScreen();
+	glutFullScreen();
 
 	glutPassiveMotionFunc(mouseMotion);
     glutMouseWheelFunc(mouseScroll);
