@@ -1,5 +1,6 @@
 #include <string.h>
 #include <GL/glut.h>
+#include <GL/freeglut_ext.h>
 #include <vector>
 #include <math.h>
 #include <stdio.h>
@@ -204,6 +205,23 @@ void mouseMotion(int x, int y) {
 	mouseY = y;
 }
 
+void mouseScroll(int button, int dir, int x, int y){
+    double sx = startx;
+    double ex = stopx;
+    if (dir > 0)
+    {
+        startx += (ex-sx)/4;
+        stopx -= (ex-sx)/4;
+    }
+    else
+    {
+        startx -= (ex-sx)/2; //zoom out
+		stopx += (ex-sx)/2;
+    }
+    precompute();
+    
+}
+
 void handleArrowpress(int key, int x, int y) {
     double sx = startx;
     double ex = stopx;
@@ -391,6 +409,7 @@ int main(int argc, char** argv) {
 	//glutFullScreen();
 
 	glutPassiveMotionFunc(mouseMotion);
+    glutMouseWheelFunc(mouseScroll);
 	glutDisplayFunc(drawScene);
 	glutKeyboardFunc(handleKeypress);
 	glutSpecialFunc(handleArrowpress);
