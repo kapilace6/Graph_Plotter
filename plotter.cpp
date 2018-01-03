@@ -29,6 +29,7 @@ double scalingFactor;
 
 char expression[200];
 parse p;
+bool isZoom = false;
 
 void dispString(double x, double y, char *string)
 {
@@ -176,6 +177,14 @@ void handleKeypress(unsigned char key, int x, int y) {
 	case 27:
 		exit(0);
 
+	case 'z':
+		isZoom = true;
+		break;
+
+	case 's':
+		isZoom = false;
+		break;
+
 	case '+':
 		if ((startx + 10) <= (stopx - 10)) {
 			startx += 10;
@@ -206,20 +215,21 @@ void mouseMotion(int x, int y) {
 }
 
 void mouseScroll(int button, int dir, int x, int y){
-    double sx = startx;
-    double ex = stopx;
-    if (dir > 0)
-    {
-        startx += (ex-sx)/4;
-        stopx -= (ex-sx)/4;
-    }
-    else
-    {
-        startx -= (ex-sx)/2; //zoom out
-		stopx += (ex-sx)/2;
-    }
-    precompute();
-    
+	if (isZoom) {
+	    double sx = startx;
+	    double ex = stopx;
+	    if (dir > 0)
+	    {
+	        startx += (ex-sx)/4;
+	        stopx -= (ex-sx)/4;
+	    }
+	    else
+	    {
+	        startx -= (ex-sx)/2; //zoom out
+			stopx += (ex-sx)/2;
+	    }
+	    precompute();
+	}
 }
 
 void handleArrowpress(int key, int x, int y) {
@@ -367,6 +377,13 @@ void drawScene() {
 
 	drawArrowAxes();
 
+	char Write[100];
+	if (isZoom)
+		snprintf(Write,100,"ZOOM MODE");
+    else
+		snprintf(Write,100,"SELECT MODE");
+    dispString(4.0,-2.65,Write);
+
 	glBegin(GL_LINE_STRIP);
 	int i;
 	double x = startx; //Actual value of x of function.
@@ -378,7 +395,8 @@ void drawScene() {
 	}
 	glEnd();
 
-	drawPointLoc();
+	if (!isZoom)
+		drawPointLoc();
 
 	glutPostRedisplay();
 
