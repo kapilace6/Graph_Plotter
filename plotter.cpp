@@ -8,6 +8,7 @@
 
 using namespace std;
 
+
 #define segments 100000
 int w = 1366, h = 768;
 int mouseX, mouseY;
